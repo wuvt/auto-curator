@@ -1,16 +1,16 @@
 from operator import itemgetter
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
-from tinytag import TinyTag
+import taglib
 import os
 import sys
 
-#starts SQLite database
+# starts SQLite database
 engine = create_engine("sqlite:///test.db")
 
 class Base(DeclarativeBase):
     pass
-#create ORM object for the track
+# create ORM object for the track
 class Track(Base):
     __tablename__ = "tracks"
 
@@ -30,25 +30,26 @@ Base.metadata.create_all(engine)
 
 # gets metadata from file
 def getMetadata(filename):
-    tag = TinyTag.get(filename)
+    f = taglib.File(filename)
 
-    metadata: dict = tag.as_dict()
-    return metadata
+    return f.tags
+    
 def loopDir(dirName):
     for e in os.scandir(dirName):
-        if e.is_file() and TinyTag.is_supported(e.path):
+        if e.is_file() and e.path.endswith('.flac'):
 
             #get the metadata from the file
             data = getMetadata(e.path)
-            
+
+            # print(data)
             # create a track object with the fileds from data
-            t = Track(album = data.get('album')[0],
-                      artist = data.get('artist')[0],
-                      title = data.get('title')[0],
-                      label = data.get('label')[0],
-                      mbTrackId = data.get('musicbrainz_trackid')[0],
+            t = Track(album = data.get('ALBUM')[0],
+                      artist = data.get('ARTIST')[0],
+                      title = data.get('TITLE')[0],
+                      label = data.get('LABEL')[0],
+                      mbTrackId = data.get('MUSICBRAINZ_TRACKID')[0],
                       path = e.path)
-            #creates a session and adds t to the database
+            # #creates a session and adds t to the database
             print(t)
             with Session(engine) as session:
                 session.add(t)
