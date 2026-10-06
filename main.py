@@ -40,20 +40,23 @@ def loopDir(dirName):
 
             #get the metadata from the file
             data = getMetadata(e.path)
-
+            
             # print(data)
-            # create a track object with the fileds from data
+            # create a track object with the fields from data
             t = Track(album = data.get('ALBUM')[0],
                       artist = data.get('ARTIST')[0],
                       title = data.get('TITLE')[0],
                       label = data.get('LABEL')[0],
                       mbTrackId = data.get('MUSICBRAINZ_TRACKID')[0],
-                      path = e.path)
+                      path = os.path.abspath(e))
             # #creates a session and adds t to the database
             print(t)
             with Session(engine) as session:
-                session.add(t)
-                session.commit()
+                q = session.query(Track.mbTrackId).filter(Track.mbTrackId==t.mbTrackId)
+                
+                if not session.query(q.exists()).scalar():
+                    session.add(t)
+                    session.commit()
         elif e.is_dir():
             # if there is a folder, run loop dir again through that
             loopDir(e.path)
