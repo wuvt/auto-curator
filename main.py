@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+import json
 from operator import itemgetter
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
@@ -20,10 +21,19 @@ class Track(Base):
     artist: Mapped[str]
     label: Mapped[str]
     mbTrackId: Mapped[str] = mapped_column(primary_key=True)
-    path: Mapped[str]
+    url: Mapped[str]
 
+# makes Track objects printable
     def __repr__(self):
-        return f"{self.title}, {self.artist}, {self.album}, {self.label}, {self.mbTrackId}, {self.path}"
+        return f"{self.title}, {self.artist}, {self.album}, {self.label}, {self.mbTrackId}, {self.url}"
+
+#turns Track object to a dictionary to export as json
+    def as_dict(self):
+            return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+ 
+    
+
 
 Base.metadata.create_all(engine)
 
@@ -49,9 +59,9 @@ def loopDir(dirName):
                       title = data.get('TITLE')[0],
                       label = data.get('LABEL')[0],
                       mbTrackId = data.get('MUSICBRAINZ_TRACKID')[0],
-                      path = os.path.abspath(e))
+                      url = os.path.abspath(e))
             # #creates a session and adds t to the database
-            print(t)
+            print(json.dumps(t.as_dict()))
             with Session(engine) as session:
                 q = session.query(Track.mbTrackId).filter(Track.mbTrackId==t.mbTrackId)
                 
@@ -64,7 +74,8 @@ def loopDir(dirName):
 
 
 
-
+def pathUrl(file):
+    return os.path.splitroot(file.path)
 
 def main():
     loopDir(sys.argv[1])
