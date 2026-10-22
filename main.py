@@ -16,12 +16,14 @@ class Base(DeclarativeBase):
 class Track(Base):
     __tablename__ = "tracks"
 
-    title: Mapped[str]
+    title: Mapped[str] = mapped_column(primary_key=True)
     album: Mapped[str]
     artist: Mapped[str]
     label: Mapped[str]
-    mbTrackId: Mapped[str] = mapped_column(primary_key=True)
+    mbTrackId: Mapped[str] 
     url: Mapped[str]
+    comment: Mapped[str]
+    # genre: Mapped[str]
 
 # makes Track objects printable
     def __repr__(self):
@@ -31,8 +33,16 @@ class Track(Base):
     def as_dict(self):
             return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
- 
+def getTag(dict, tag):
+
+    try:
+        returnValue = dict.get(tag)[0]
+    except TypeError:
+        returnValue = 'Tag does not exist, Please update metadata'
+
+    return returnValue
     
+        
 
 
 Base.metadata.create_all(engine)
@@ -47,18 +57,21 @@ def getMetadata(filename):
     
 def loopDir(dirName):
     for e in os.scandir(dirName):
-        if e.is_file() and e.path.endswith('.flac'):
-
+        if e.is_file() and (e.path.endswith('.flac') or (e.path.endswith('.mp3'))) :
+            # c:\Users\victo\Music\ncpjazz\ncp-jazz
             #get the metadata from the file
             data = getMetadata(e.path)
             
             # print(data)
+            # print(e.path)
             # create a track object with the fields from data
-            t = Track(album = data.get('ALBUM')[0],
-                      artist = data.get('ARTIST')[0],
-                      title = data.get('TITLE')[0],
-                      label = data.get('LABEL')[0],
-                      mbTrackId = data.get('MUSICBRAINZ_TRACKID')[0],
+            t = Track(album = getTag(data, 'ALBUM'),
+                      artist = getTag(data, 'ARTIST'),
+                      title = getTag(data, 'TITLE'),
+                      label = getTag(data, 'LABEL'),
+                      mbTrackId = getTag(data,'MUSICBRAINZ_TRACKID'),
+                      comment = getTag(data, 'COMMENT'),
+                    #   genre = getTag(data, 'GENRE'),
                       url = os.path.abspath(e))
             # #creates a session and adds t to the database
             print(json.dumps(t.as_dict()))
@@ -78,7 +91,10 @@ def pathUrl(file):
     return os.path.splitroot(file.path)
 
 def main():
-    loopDir(sys.argv[1])
+    try:
+        loopDir(sys.argv[1])
+    except IndexError:
+        print('Enter Directory')
 
 if __name__ == "__main__":
     main()
