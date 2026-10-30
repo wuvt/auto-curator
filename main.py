@@ -55,7 +55,12 @@ def getMetadata(filename):
 
     return f.tags
     
-def loopDir(dirName):
+def loopDir(dirName, jout):
+    
+
+    
+
+
     for e in os.scandir(dirName):
         if e.is_file() and (e.path.endswith('.flac') or (e.path.endswith('.mp3'))) :
             # c:\Users\victo\Music\ncpjazz\ncp-jazz
@@ -74,7 +79,7 @@ def loopDir(dirName):
                     #   genre = getTag(data, 'GENRE'),
                       url = os.path.abspath(e))
             # #creates a session and adds t to the database
-            print(json.dumps(t.as_dict()))
+            jout.append(t.as_dict()) 
             with Session(engine) as session:
                 q = session.query(Track.mbTrackId).filter(Track.mbTrackId==t.mbTrackId)
                 
@@ -83,7 +88,10 @@ def loopDir(dirName):
                     session.commit()
         elif e.is_dir():
             # if there is a folder, run loop dir again through that
-            loopDir(e.path)
+            loopDir(e.path, jout)
+
+    
+
 
 
 
@@ -91,9 +99,20 @@ def pathUrl(file):
     return os.path.splitroot(file.path)
 
 def main():
+
+    jout = []
+
     try:
-        loopDir(sys.argv[1])
+        loopDir(sys.argv[1], jout)
+
+        file = open('out.json', 'w+')
+        json.dump(jout, file)
+
+
     except IndexError:
+
+        
+
         print('Enter Directory')
 
 if __name__ == "__main__":
