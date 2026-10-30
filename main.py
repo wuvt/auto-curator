@@ -33,12 +33,14 @@ class Track(Base):
     def as_dict(self):
             return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-def getTag(dict, tag):
+def getTag(dict, tag, e):
 
     try:
         returnValue = dict.get(tag)[0]
     except TypeError:
-        returnValue = 'Tag does not exist, Please update metadata'
+        returnValue = ' '
+        print(os.path.abspath(e))
+        print('Is missing ' + tag + ' tag\n')
 
     return returnValue
     
@@ -70,12 +72,12 @@ def loopDir(dirName, jout):
             # print(data)
             # print(e.path)
             # create a track object with the fields from data
-            t = Track(album = getTag(data, 'ALBUM'),
-                      artist = getTag(data, 'ARTIST'),
-                      title = getTag(data, 'TITLE'),
-                      label = getTag(data, 'LABEL'),
-                      mbTrackId = getTag(data,'MUSICBRAINZ_TRACKID'),
-                      comment = getTag(data, 'COMMENT'),
+            t = Track(album = getTag(data, 'ALBUM',e),
+                      artist = getTag(data, 'ARTIST',e),
+                      title = getTag(data, 'TITLE',e),
+                      label = getTag(data, 'LABEL',e),
+                      mbTrackId = getTag(data,'MUSICBRAINZ_TRACKID',e),
+                      comment = getTag(data, 'COMMENT',e),
                     #   genre = getTag(data, 'GENRE'),
                       url = os.path.abspath(e))
             # #creates a session and adds t to the database
