@@ -16,7 +16,7 @@ class Base(DeclarativeBase):
 class Track(Base):
     __tablename__ = "tracks"
 
-    title: Mapped[str] = mapped_column(primary_key=True)
+    title: Mapped[str] 
     album: Mapped[str]
     artist: Mapped[str]
     label: Mapped[str]
@@ -24,6 +24,7 @@ class Track(Base):
     url: Mapped[str]
     comment: Mapped[str]
     # genre: Mapped[str]
+    wuvtid : Mapped[int] = mapped_column(primary_key=True)
 
 # makes Track objects printable
     def __repr__(self):
@@ -39,8 +40,9 @@ def getTag(dict, tag, e):
         returnValue = dict.get(tag)[0]
     except TypeError:
         returnValue = ' '
-        print(os.path.abspath(e))
-        print('Is missing ' + tag + ' tag\n')
+        if tag != "COMMENT":
+            print(os.path.abspath(e))
+            print('Is missing ' + tag + ' tag\n')
 
     return returnValue
     
@@ -83,7 +85,7 @@ def loopDir(dirName, jout):
             # #creates a session and adds t to the database
             jout.append(t.as_dict()) 
             with Session(engine) as session:
-                q = session.query(Track.title).filter(Track.mbTrackId==t.title)
+                q = session.query(Track.mbTrackId).filter(Track.mbTrackId==t.mbTrackId)
                 
                 if not session.query(q.exists()).scalar():
                     session.add(t)
