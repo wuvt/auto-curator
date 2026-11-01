@@ -83,7 +83,7 @@ def loopDir(dirName, jout):
             # #creates a session and adds t to the database
             jout.append(t.as_dict()) 
             with Session(engine) as session:
-                q = session.query(Track.mbTrackId).filter(Track.mbTrackId==t.mbTrackId)
+                q = session.query(Track.title).filter(Track.mbTrackId==t.title)
                 
                 if not session.query(q.exists()).scalar():
                     session.add(t)
